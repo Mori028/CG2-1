@@ -53,25 +53,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     //ウィンドウを表示状態にする
     ShowWindow(hwnd, SW_SHOW);
+
+    MSG msg{};//メッセージ
+//directx初期化処理 ここから
+
+//directx初期化処理　ここまで
+// 
+    //ゲームループ
+    while (true) {
+        //メッセージがある
+        if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+            TranslateMessage(&msg);//キー入力メッセージの処理
+            DispatchMessage(&msg);//プロシージャにメッセージを送る
+        }
+        //Xボタンで終了メッセージが来たらゲームループを抜ける
+        if (msg.message == WM_QUIT) {
+            break;
+        }
+        //directx毎のフレーム処理ここから
+
+         //directx毎のフレーム処理
+    }
+
+    UnregisterClass(w.lpszClassName, w.hInstance);
     return 0;
 }
 
-MSG msg{};//メッセージ
-//初期化処理 ここから
 
-//初期化処理　ここまで
 
-//ゲームループ
-while(true) {
-    //メッセージがある
-    if (peekMessage(6msg, nullptr, 0, 0, PM_REMOVE)) {
-        TranslateMessage(&msg);//キー入力メッセージの処理
-        DispatchMessage(&msg);//プロシージャにメッセージを送る
-    }
-    //Xボタンで終了メッセージが来たらゲームループを抜ける
-    if (msg.message == WM_QUIT) {
-        break;
-    }
-}
 
-UnregisterClass(w.lpszClassName, w.hinstance);
