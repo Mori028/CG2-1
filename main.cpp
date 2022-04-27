@@ -439,10 +439,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{
 			OutputDebugStringA("Hit 0\n");  // 出力ウィンドウに「Hit 0」と表示
 		}
-		if (key[DIK_SPACE])     // スペースキーが押されていたら
-		{
-			FLOAT clearcolor[] = { 0.0f,0.0f,0.0f,0.0f };//青っぽい色
-		}
 
 		//バックバッファの番号取得(２つなので0番か1番)
 		UINT bbIndex = swapChain->GetCurrentBackBufferIndex();
@@ -462,6 +458,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		//3.描画クリア　　　　　　　R    G     B    A
 		FLOAT clearcolor[] = { 0.1f,0.25f,0.5f,0.0f };//青っぽい色
+		if (key[DIK_SPACE])     // スペースキーが押されていたら
+		{
+			clearcolor[0] = { 1.0f };
+			clearcolor[1] = { 0.3f };
+			clearcolor[2] = { 0.5f };
+			clearcolor[3] = { 1.0f };
+		}
 		commandList->ClearRenderTargetView(rtvHandle, clearcolor, 0, nullptr);
 		//4.描画コマンドはここから
 		// ビューポート設定コマンド
