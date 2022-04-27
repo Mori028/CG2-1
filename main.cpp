@@ -461,9 +461,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (key[DIK_SPACE])     // スペースキーが押されていたら
 		{
 			clearcolor[0] = { 1.0f };
-			clearcolor[1] = { 0.3f };
+			clearcolor[1] = { 0.0f };
 			clearcolor[2] = { 0.5f };
-			clearcolor[3] = { 1.0f };
+			clearcolor[3] = { 0.0f };
 		}
 		commandList->ClearRenderTargetView(rtvHandle, clearcolor, 0, nullptr);
 		//4.描画コマンドはここから
