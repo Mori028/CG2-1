@@ -378,7 +378,34 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	pipelineDesc.RasterizerState.DepthClipEnable = true; // 深度クリッピングを有効に
 
 	// ブレンドステート
-	pipelineDesc.BlendState.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;  // RBGA全てのチャンネルを描画
+	// レンダーターゲットのブレンド設定
+	D3D12_RENDER_TARGET_BLEND_DESC& blenddesc = pipelineDesc.BlendState.RenderTarget[0];
+	blenddesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL; // RBGA全てのチャンネルを描画
+
+	blenddesc.BlendEnable = true;                   // ブレンドを有効にする
+	blenddesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;    // 加算
+	blenddesc.SrcBlendAlpha = D3D12_BLEND_ONE;      // ソースの値を100% 使う
+	blenddesc.DestBlendAlpha = D3D12_BLEND_ZERO;    // デストの値を  0% 使う
+
+	//// 加算合成
+	//blenddesc.BlendOp = D3D12_BLEND_OP_ADD; // 加算
+	//blenddesc.SrcBlend = D3D12_BLEND_ONE;   // ソースの値を100% 使う
+	//blenddesc.DestBlend = D3D12_BLEND_ONE;  // デストの値を100% 使う
+
+	//// 減算合成
+	//blenddesc.BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;    // デストからソースを減算
+	//blenddesc.SrcBlend = D3D12_BLEND_ONE;               // ソースの値を100% 使う
+	//blenddesc.DestBlend = D3D12_BLEND_ONE;              // デストの値を100% 使う
+
+	//// 色反転
+	//blenddesc.BlendOp = D3D12_BLEND_OP_ADD;             // 加算
+	//blenddesc.SrcBlend = D3D12_BLEND_INV_DEST_COLOR;    // 1.0f-デストカラーの値
+	//blenddesc.DestBlend = D3D12_BLEND_ZERO;             // 使わない
+
+	// 半透明合成
+	blenddesc.BlendOp = D3D12_BLEND_OP_ADD;             // 加算
+	blenddesc.SrcBlend = D3D12_BLEND_SRC_ALPHA;         // ソースのアルファ値
+	blenddesc.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;    // 1.0f-ソースのアルファ値
 
 	// 頂点レイアウトの設定
 	pipelineDesc.InputLayout.pInputElementDescs = inputLayout;
@@ -469,9 +496,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//4.描画コマンドはここから
 		// ビューポート設定コマンド
 		D3D12_VIEWPORT viewport{};
-		viewport.Width = WIN_WIDTH/2;
+		viewport.Width = WIN_WIDTH;
 		viewport.Height = WIN_HEIGHT;
-		viewport.TopLeftX = 600;
+		viewport.TopLeftX = 0;
 		viewport.TopLeftY = 0;
 		viewport.MinDepth = 0.0f;
 		viewport.MaxDepth = 1.0f;
@@ -480,9 +507,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// シザー矩形
 		D3D12_RECT scissorRect{};
-		scissorRect.left = 700;//切り抜き座標左
+		scissorRect.left = 0;//切り抜き座標左
 		scissorRect.right = scissorRect.left + WIN_WIDTH;//切り抜き座標右
-		scissorRect.top = 350;//切り抜き座標上
+		scissorRect.top = 0;//切り抜き座標上
 		scissorRect.bottom = scissorRect.top + WIN_HEIGHT;//切り抜き座標下
 		// シザー矩形設定コマンドを、コマンドリストに積む
 		commandList->RSSetScissorRects(1, &scissorRect);
