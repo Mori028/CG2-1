@@ -408,7 +408,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rootSigBlob->Release();
 	// パイプラインにルートシグネチャをセット
 	pipelineDesc.pRootSignature = rootSignature;
-
+	
 	// パイプランステートの生成
 	ID3D12PipelineState* pipelineState = nullptr;
 	result = device->CreateGraphicsPipelineState(&pipelineDesc, IID_PPV_ARGS(&pipelineState));
@@ -496,8 +496,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		viewport[3].TopLeftY = 500;
 		viewport[3].MinDepth = 0.0f;
 		viewport[3].MaxDepth = 1.0f;
-		
+		if (key[DIK_1])
+		{
 
+		}
 		// シザー矩形
 		D3D12_RECT scissorRect{};
 		scissorRect.left = 0;//切り抜き座標左
@@ -524,6 +526,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->RSSetViewports(1, &viewport[i]);
 
 			commandList->DrawInstanced(_countof(viewport), 1, 0, 0);
+		}
+
+		if (key[DIK_1])
+		{
+			
 		}
 		//4.描画コマンドはここまで
 		//5.リソースバリアを戻す
