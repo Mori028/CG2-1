@@ -219,8 +219,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	 //頂点データ
 	XMFLOAT3 vertices[] = {
 		{ -0.5f, -0.5f, 0.0f },//左下
-		{ -0.5f, 0.5f, 0.0f },//左上
 		{ 0.5f, -0.5f, 0.0f },//右下
+		{-0.5f,0.0f,0.0f},//左中
+		{0.5f,0.0f,0.0f},//右中
+		{ -0.5f, 0.5f, 0.0f },//左上
+		{ 0.5f, 0.5f, 0.0f },//右上
 	};
 	//頂点データ全体のサイズ　＝　頂点データ一つ分のサイズ　＊　頂点データの要素数
 	UINT sizeVB = static_cast<UINT>(sizeof(XMFLOAT3) * _countof(vertices));
@@ -449,9 +452,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// 描画コマンド
 		commandList->DrawInstanced(_countof(vertices), 1, 0, 0);//全ての頂点を使って描画
-
-
-
 
 		//4.描画コマンドはここまで
 		//5.リソースバリアを戻す
