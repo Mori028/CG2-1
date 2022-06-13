@@ -495,7 +495,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ScratchImage scratchImg{};
 	// WICテクスチャのロード
 	result = LoadFromWICFile(
-		L"Resources/raiden.jpg",   //「Resources」フォルダの「mario.png」
+		L"Resources/raiden.jpg",   //「Resources」フォルダの「raiden.png」
 		WIC_FLAGS_NONE,
 		&metadata, scratchImg);
 	ScratchImage mipChain{};
