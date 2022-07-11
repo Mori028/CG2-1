@@ -215,7 +215,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	dsvHeapDesc.NumDescriptors = 1;//深度ビューは1つ
 	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 	ID3D12DescriptorHeap* dsvHeap = nullptr;
-	result = device->CreateDescriptorHeap(&dsvHeapDesc,IID_PPV_ARGS(&dsvHeap));
+	result = device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&dsvHeap));
 
 	//深度ビュー作成
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
@@ -225,7 +225,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		depthBuff,
 		&dsvDesc,
 		dsvHeap->GetCPUDescriptorHandleForHeapStart());
-	
+
 	//デスクリプタヒープの設定
 	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc{};
 	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;//レンゲーターゲットレビュー
@@ -498,9 +498,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ConstBufferDataMaterial* constMapMaterial = nullptr;
 	result = constBuffMaterial->Map(0, nullptr, (void**)&constMapMaterial); // マッピング
 	assert(SUCCEEDED(result));
-
-	ID3D12Resource* constBuffTransform = nullptr;
-	ConstBufferDataTransform* constMapTransform = nullptr;
+	//0
+	ID3D12Resource* constBuffTransform0 = nullptr;
+	ConstBufferDataTransform* constMapTransform0 = nullptr;
 	{
 		// ヒープ設定
 		D3D12_HEAP_PROPERTIES cbheapProp{};
@@ -522,22 +522,67 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			&cbResourceDesc, // リソース設定
 			D3D12_RESOURCE_STATE_GENERIC_READ,
 			nullptr,
-			IID_PPV_ARGS(&constBuffTransform));
+			IID_PPV_ARGS(&constBuffTransform0));
 		assert(SUCCEEDED(result));
 		// 定数バッファのマッピング
-		result = constBuffTransform->Map(0, nullptr, (void**)&constMapTransform); // マッピング
+		result = constBuffTransform0->Map(0, nullptr, (void**)&constMapTransform0); // マッピング
 		assert(SUCCEEDED(result));
 
 	}
-	// 単位行列を代入
-	constMapTransform->mat = XMMatrixIdentity();
-	constMapTransform->mat.r[0].m128_f32[0] = 2.0f / 1280;
-	constMapTransform->mat.r[1].m128_f32[1] = -2.0f / 720;
-	constMapTransform->mat.r[3].m128_f32[0] = -1.0f;
-	constMapTransform->mat.r[3].m128_f32[1] = 1.0f;
+	//1
+	ID3D12Resource* constBuffTransform1 = nullptr;
+	ConstBufferDataTransform* constMapTransform1 = nullptr;
+	{
+		// ヒープ設定
+		D3D12_HEAP_PROPERTIES cbheapProp{};
+		cbHeapProp.Type = D3D12_HEAP_TYPE_UPLOAD; // GPUへの転送用
+		// リソース設定
+		D3D12_RESOURCE_DESC cbResourceDesc{};
+		cbResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+		cbResourceDesc.Width = (sizeof(ConstBufferDataTransform) + 0xff) & ~0xff; // 256バイトアラインメント
+		cbResourceDesc.Height = 1;
+		cbResourceDesc.DepthOrArraySize = 1;
+		cbResourceDesc.MipLevels = 1;
+		cbResourceDesc.SampleDesc.Count = 1;
+		cbResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 
-	// 並行投影行列の計算
-	constMapTransform->mat = XMMatrixOrthographicOffCenterLH(
+		// 定数バッファ生成
+		result = device->CreateCommittedResource(
+			&cbHeapProp, // ヒープ設定
+			D3D12_HEAP_FLAG_NONE,
+			&cbResourceDesc, // リソース設定
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&constBuffTransform1));
+		assert(SUCCEEDED(result));
+		// 定数バッファのマッピング
+		result = constBuffTransform1->Map(0, nullptr, (void**)&constMapTransform1); // マッピング
+		assert(SUCCEEDED(result));
+
+	}
+	// 単位行列を代入0
+	constMapTransform0->mat = XMMatrixIdentity();
+	constMapTransform0->mat.r[0].m128_f32[0] = 2.0f / 1280;
+	constMapTransform0->mat.r[1].m128_f32[1] = -2.0f / 720;
+	constMapTransform0->mat.r[3].m128_f32[0] = -1.0f;
+	constMapTransform0->mat.r[3].m128_f32[1] = 1.0f;
+
+	// 単位行列を代入1
+	constMapTransform1->mat = XMMatrixIdentity();
+	constMapTransform1->mat.r[0].m128_f32[0] = 2.0f / 1280;
+	constMapTransform1->mat.r[1].m128_f32[1] = -2.0f / 720;
+	constMapTransform1->mat.r[3].m128_f32[0] = -1.0f;
+	constMapTransform1->mat.r[3].m128_f32[1] = 1.0f;
+
+	// 並行投影行列の計算0
+	constMapTransform0->mat = XMMatrixOrthographicOffCenterLH(
+		0, 1280,
+		720, 0,
+		0.0f, 1.0f
+	);
+
+	// 並行投影行列の計算1
+	constMapTransform1->mat = XMMatrixOrthographicOffCenterLH(
 		0, 1280,
 		720, 0,
 		0.0f, 1.0f
@@ -587,12 +632,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 座標
 	XMFLOAT3 position = { 0.0f,0.0f,0.0f };
 
-	// ワールド、ビュー、プロジェクションを合成して定数バッファへの転送処理
-	constMapTransform->mat = matWorld * matView * matProjection;
+	// ワールド、ビュー、プロジェクションを合成して定数バッファへの転送処理0
+	constMapTransform0->mat = matWorld * matView * matProjection;
 
 	// 値を書き込むと自動的に転送される
 	constMapMaterial->color = XMFLOAT4(1, 1, 1, 1.0f);              // RGBAで半透明の赤
 
+	// ワールド変換行列1
+	XMMATRIX matWorld1;
+	matWorld1 = XMMatrixIdentity();
+	XMMATRIX matScale1; // スケーリング行列
+	matScale1 = XMMatrixScaling(1.0f, 0.5f, 1.0f);
+	XMMATRIX matRot1; // 回転行列
+	matRot1 = XMMatrixIdentity();
+	matRot1 += XMMatrixRotationY(XM_PI/4.0f);
+	XMMATRIX matTrans1; // 平行移動行列
+	matTrans1 = XMMatrixTranslation(-20.0f, 0, 0);
+	// ワールド、ビュー、プロジェクションを合成して定数バッファへの転送処理1
+	constMapTransform1->mat = matWorld1 * matView * matProjection;
 
 	// 横方向ピクセル数
 	const size_t textureWidth = 256;
@@ -805,7 +862,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		},
 	};
 
-	
+
 
 	// グラフィックスパイプライン設定
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineDesc{};
@@ -992,8 +1049,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		matTrans = XMMatrixTranslation(position.x, position.y, position.z);
 		matWorld += matTrans; // ワールド行列に平行移動を反映
 
-		// 定数バッファに転送
-		constMapTransform->mat = matWorld * matView * matProjection;
+		// 定数バッファに転送0
+		constMapTransform0->mat = matWorld * matView * matProjection;
+
+		// 定数バッファに転送1
+		constMapTransform1->mat = matWorld1 * matView * matProjection;
+
 
 		//バックバッファの番号取得(２つなので0番か1番)
 		UINT bbIndex = swapChain->GetCurrentBackBufferIndex();
@@ -1063,8 +1124,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		D3D12_GPU_DESCRIPTOR_HANDLE srvGpuHandle = srvHeap->GetGPUDescriptorHandleForHeapStart();
 		// SRVヒープの先頭にあるSRVをルートパラメータ1番に設定
 		commandList->SetGraphicsRootDescriptorTable(1, srvGpuHandle);
-		// 定数バッファビュー(CBV)の設定コマンド
-		commandList->SetGraphicsRootConstantBufferView(2, constBuffTransform->GetGPUVirtualAddress());
 
 		// インデックスバッファビューの設定コマンド
 		commandList->IASetIndexBuffer(&ibView);
@@ -1076,10 +1135,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// 頂点バッファビューの設定コマンド
 		commandList->IASetVertexBuffers(0, 1, &vbView);
 
-		// 描画コマンド
+		// 定数バッファビュー(CBV)の設定コマンド0
+		commandList->SetGraphicsRootConstantBufferView(2, constBuffTransform0->GetGPUVirtualAddress());
+		// 描画コマンド0
 		commandList->DrawIndexedInstanced(_countof(indices), 1, 0, 0, 0);
 
-
+		// 定数バッファビュー(CBV)の設定コマンド1
+		commandList->SetGraphicsRootConstantBufferView(2, constBuffTransform1->GetGPUVirtualAddress());
+		// 描画コマンド1
+		commandList->DrawIndexedInstanced(_countof(indices), 1, 0, 0, 0);
 		//4.描画コマンドはここまで
 		//5.リソースバリアを戻す
 		barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;//表示状態から
